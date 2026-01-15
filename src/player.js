@@ -6,9 +6,10 @@ export class Player {
         // Cube du joueur
         const geometry = new THREE.BoxGeometry(1, 2, 1)
         const material = new THREE.MeshBasicMaterial({ color: randomColor() })
-        console.log(material.color);
+        this.playerBox = new THREE.Box3()
         this.mesh = new THREE.Mesh(geometry, material)
         this.mesh.position.set(0, 1, 0)
+        this.score = 0;
         scene.add(this.mesh)
 
         this.speed = 5
@@ -19,12 +20,12 @@ export class Player {
 
         // Pivot pour rotation horizontale (yaw)
         this.cameraPivot = new THREE.Object3D()
-        this.cameraPivot.position.set(0, 1, 0) // hauteur des yeux
+        this.cameraPivot.position.set(0, 1, 0) // hauteur des yeux 
         this.mesh.add(this.cameraPivot)
 
         // Caméra TPS
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100)
-        this.camera.position.set(0, 1, -4) // recul + hauteur
+        this.camera.position.set(0, 0, -4) // recul + hauteur
         this.camera.rotation.y = Math.PI // Tourner de 180° pour regarder vers le joueur
         this.cameraPivot.add(this.camera)
 
@@ -38,7 +39,7 @@ export class Player {
 
     onMouseMove(event) {
         // rotation horizontale
-        this.cameraPivot.rotation.y -= (event.movementX * this.mouseSensitivity)
+        this.cameraPivot.rotation.y -= event.movementX * this.mouseSensitivity 
 
         // rotation verticale (pitch)
         this.pitch -= event.movementY * this.mouseSensitivity
@@ -50,8 +51,8 @@ export class Player {
     getMovementVectors() {
         const forward = new THREE.Vector3()
         this.cameraPivot.getWorldDirection(forward)
-        forward.y = 0
-        forward.normalize()
+        //forward.y = 0
+        //wforward.normalize()
 
         const right = new THREE.Vector3()
         right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize()
@@ -63,7 +64,6 @@ export class Player {
         const { forward, right, } = this.getMovementVectors()
         const move = new THREE.Vector3()
 
-        console.log(this.velocityY);
         if (keys.w) move.add(forward)
         if (keys.s) move.sub(forward)
         if (keys.d) move.add(right)
@@ -89,5 +89,17 @@ export class Player {
             move.multiplyScalar(this.speed * deltaTime)
             this.mesh.position.add(move)
         }
+        this.playerBox.setFromObject(this.mesh);
+    }
+
+    getBox()
+    {
+        return (this.playerBox);
+    }
+
+    addScore(points)
+    {
+        this.score += points;
+        console.log('player Score = ' + this.score);
     }
 }

@@ -5,6 +5,7 @@ import { Player } from './player.js'
 import { Coin } from './coin.js'
 import {randomColor} from './utils.js'
 import gsap from 'gsap'
+import { WaterRefractionShader } from 'three/examples/jsm/Addons.js'
 
 
 const gui = new GUI({
@@ -158,7 +159,6 @@ for (let i = 0; i < nb_of_coins; i++)
 {
     const posX = Math.round(Math.random() * 20 - Math.random() * 20);
     const posZ = Math.round(Math.random() * 20 - Math.random() * 20);
-    console.log(posX, posZ);
     coins.push(new Coin(posX, posZ));
 }
 for (let i = 0; i < nb_of_coins; i++)
@@ -181,9 +181,17 @@ const tick = () =>
     const deltaTime = clock.getDelta()
 
     player.update(deltaTime, keys);
-    coins[2].update(deltaTime);
-    mouse.deltaX = 0;
-    mouse.deltaY = 0;
+    for (let i = 0; i < coins.length; i++)
+    {
+        coins[i].update(deltaTime);
+        if (coins[i].getBox().intersectsBox(player.getBox()))
+        {
+            scene.remove(coins[i].mesh);
+            coins.splice(i, 1);
+            player.addScore(10);
+            break ;
+        }
+    }
     // Render
     renderer.render(scene, player.camera)
     // Call tick again on the next frame
