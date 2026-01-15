@@ -156,7 +156,13 @@ let nb_of_coins = 10;
 
 for (let i = 0; i < nb_of_coins; i++)
 {
-    coins.push(new Coin(Math.round((Math.random() * 10 - Math.random() * 10))), Math.round((Math.random() * 10 - Math.random() * 10)))
+    const posX = Math.round(Math.random() * 20 - Math.random() * 20);
+    const posZ = Math.round(Math.random() * 20 - Math.random() * 20);
+    console.log(posX, posZ);
+    coins.push(new Coin(posX, posZ));
+}
+for (let i = 0; i < nb_of_coins; i++)
+{
     scene.add(coins[i].mesh);
 }
 // GUI 
@@ -175,7 +181,7 @@ const tick = () =>
     const deltaTime = clock.getDelta()
 
     player.update(deltaTime, keys);
-    coin.update(deltaTime);
+    coins[2].update(deltaTime);
     mouse.deltaX = 0;
     mouse.deltaY = 0;
     // Render
