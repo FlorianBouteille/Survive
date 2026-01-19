@@ -1,11 +1,13 @@
 import * as THREE from 'three'
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js'
 import GUI from 'lil-gui'
-import { Player } from './player.js'
+import { LocalPlayer } from './LocalPlayer.js'
 import { Coin } from './coin.js'
+import { Platform } from './Platform.js'
 import {randomColor} from './utils.js'
 import gsap from 'gsap'
 import { WaterRefractionShader } from 'three/examples/jsm/Addons.js'
+import { Vector2 } from 'three'
 
 
 const gui = new GUI({
@@ -86,17 +88,30 @@ placeMarker(0, 20, 0x0000ff);
 placeMarker(-20, 0, 0x000000);
 placeMarker(20, 0, 0xffffff);
 
+const coins = new Array();
+function addPlatforms(scene)
+{
+    let Platforms = new Array();
+    Platforms.push(new Platform(scene, new THREE.Vector3(0, 0, 0), 5, 1, 5))
+    let posY = 0;
+    for (let i = 0; i < 15; i++)
+    {
+        let posX = 2 + i * 7 + Math.random() * 2;
+        posY += Math.random();
+        let size = Math.random() * 3 + 2;
+        Platforms.push(new Platform(scene, new THREE.Vector3(posX, posY, Math.random() * 3), size, 1, size));
+        coins.push(new Coin(posX, posY + 0.3, 0));
+    }
+    return (Platforms)
+}
+
 // Objects
-const groundGeo = new THREE.PlaneGeometry(40, 40);
-groundGeo.rotateX(- Math.PI / 2);
-const groundMaterial = new THREE.MeshBasicMaterial({color : randomColor()});
-const ground = new THREE.Mesh(groundGeo, groundMaterial);
-ground.position.y -= 0.5;
-scene.add(ground);
-const player = new Player(scene, canvas);
+const player = new LocalPlayer(scene, canvas);
 scene.add(player.mesh);
 const grid = new THREE.GridHelper(50, 50);
 scene.add(grid);
+
+const platforms = addPlatforms(scene);
 // Sizes
 
 window.addEventListener('resize', () =>
@@ -151,22 +166,20 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-const coin = new Coin(2, 2);
-const coins = new Array();
-let nb_of_coins = 10;
-
-for (let i = 0; i < nb_of_coins; i++)
-{
-    const posX = Math.round(Math.random() * 20 - Math.random() * 20);
-    const posZ = Math.round(Math.random() * 20 - Math.random() * 20);
-    coins.push(new Coin(posX, posZ));
-}
-for (let i = 0; i < nb_of_coins; i++)
-{
-    scene.add(coins[i].mesh);
-}
 // GUI 
 const cube = gui.addFolder('The cube');
+const platformsGui = gui.addFolder('Plateformes')
+for (let i = 0; i < platforms.length; i++)
+{
+    const platformFolder = platformsGui.addFolder('Plateforme $(i)')
+    {
+        platformFolder.add(platforms[i].mesh.position, 'x', -30, 30, 1).name('posX');
+        platformFolder.add(platforms[i].mesh.position, 'z', -30, 30, 1).name('posZ');
+        platformFolder.add(platforms[i].mesh.scale, 'x', -30, 30, 1).name('sizeX');
+        platformFolder.add(platforms[i].mesh.scale, 'z', -30, 30, 1).name('sizeZ');
+    }
+}
+
 cube.add(player.mesh.position, 'x', -10, 10, 0.1).name('cubeX');
 cube.add(player.mesh.scale, 'x', 0, 10, 0.2).name('sizeX');
 cube.add(player.mesh.scale, 'y', 0, 10, 0.2).name('sizeY');
@@ -180,7 +193,7 @@ const tick = () =>
 {
     const deltaTime = clock.getDelta()
 
-    player.update(deltaTime, keys);
+    player.update(deltaTime, keys, platforms);
     for (let i = 0; i < coins.length; i++)
     {
         coins[i].update(deltaTime);
