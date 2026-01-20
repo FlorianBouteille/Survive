@@ -1,12 +1,9 @@
 import * as THREE from 'three'
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js'
 import GUI from 'lil-gui'
 import { LocalPlayer } from './LocalPlayer.js'
 import { Coin } from './coin.js'
 import { Platform } from './Platform.js'
 import {randomColor} from './utils.js'
-import gsap from 'gsap'
-import { WaterRefractionShader } from 'three/examples/jsm/Addons.js'
 import { Vector2 } from 'three'
 
 
@@ -108,7 +105,7 @@ function addPlatforms(scene)
 }
 
 // Objects
-const player = new LocalPlayer(scene, canvas);
+const player = new LocalPlayer(scene, canvas, 0xffffff);
 scene.add(player.mesh);
 const grid = new THREE.GridHelper(50, 50);
 scene.add(grid);
@@ -139,7 +136,8 @@ const keys =
     d : false,
     space : false
 }
-
+const light = new THREE.HemisphereLight(0xaa1212, 50);
+scene.add(light);
 // Camera
 
 function onKey(event) 
@@ -199,12 +197,12 @@ const tick = () =>
     const deltaTime = clock.getDelta()
     const elapsedTime = clock.getElapsedTime();
 
-    player.update(deltaTime, keys, platforms);
-    //platforms[1].update(elapsedTime);
     for (let i = 0; i < movingPlatforms.length; i++)
     {
         movingPlatforms[i].update(elapsedTime);
     }
+    player.update(deltaTime, keys, platforms);
+    //platforms[1].update(elapsedTime);
     for (let i = 0; i < coins.length; i++)
     {
         coins[i].update(deltaTime);

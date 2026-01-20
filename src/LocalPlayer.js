@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import { Player } from './Player.js'
 
 export class LocalPlayer extends Player {
-    constructor(scene, canvas) {
-        super(scene, new THREE.Vector3(0, 1, 0))
+    constructor(scene, canvas, colorPlayer) {
+        super(scene, new THREE.Vector3(0, 1, 0), colorPlayer)
 
         // Pivot yaw
         this.cameraPivot = new THREE.Object3D()
@@ -78,7 +78,10 @@ export class LocalPlayer extends Player {
 
         if (keys.space) this.jump()
 
+        if (this.mixer) this.mixer.update(deltaTime)
         this.move(move, deltaTime, platforms)
         this.updatePhysics(deltaTime, platforms, directions)
+        this.updateAnimation(directions, deltaTime);
+        //this.updateAnimation(directions, deltaTime);
     }
 }
