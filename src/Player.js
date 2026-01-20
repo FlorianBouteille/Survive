@@ -4,7 +4,6 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 export class Player {
     constructor(scene, position = new THREE.Vector3(), playerColor) {
-        console.log(playerColor);
         const loader = new GLTFLoader()
         const geometry = new THREE.BoxGeometry(1, 2, 1)
         const material = new THREE.MeshBasicMaterial({ color: randomColor() , visible : false})

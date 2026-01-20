@@ -26,6 +26,8 @@ export class RemotePlayer extends Player {
             ).normalize()
             this.changeTimer = 2 + Math.random() * 2
         }
+        if (Math.random() < 0.005)
+            this.jump();
 
         this.move(this.direction, deltaTime, platforms)
         this.updatePhysics(deltaTime, platforms, this.direction)

@@ -95,14 +95,14 @@ function addPlatforms(scene)
     let posY = 0;
     for (let i = 0; i < 15; i++)
     {
-        let posX = 2 + i * 7 + Math.random() * 2;
+        let posX = 22 + i * 7 + Math.random() * 2;
         posY += Math.random();
         let size = Math.random() * 3 + 2;
         Platforms.push(new Platform(scene, new THREE.Vector3(posX, posY, 0), size, 1, size));
         coins.push(new Coin(posX, posY + 1.3, 0));
         scene.add(coins[i].mesh);
     }
-    for (let i = 0; i < Platforms.length; i++)
+    for (let i = 1; i < Platforms.length; i++)
     {
         Platforms[i].isStatic = false;
         Platforms[i].moveX = Math.random() * 3;
@@ -203,7 +203,7 @@ for (let i = 0; i < platforms.length; i++)
 }
 
 let bots = new Array();
-for (let i = 0; i < 40; i++)
+for (let i = 0; i < 100; i++)
     bots.push(new RemotePlayer(scene, new THREE.Vector3(0, 0, 0), randomColor()));
 for (let i = 0; i < 40; i++)
     scene.add(bots[i].mesh)
