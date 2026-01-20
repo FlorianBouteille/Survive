@@ -2,8 +2,8 @@ import * as THREE from 'three'
 import { Player } from './Player.js'
 
 export class RemotePlayer extends Player {
-    constructor(scene, position) {
-        super(scene, position)
+    constructor(scene, position, color) {
+        super(scene, position, color)
 
         // IA simple
         this.direction = new THREE.Vector3(
@@ -15,7 +15,7 @@ export class RemotePlayer extends Player {
         this.changeTimer = 0
     }
 
-    update(deltaTime) {
+    update(deltaTime, platforms) {
         this.changeTimer -= deltaTime
 
         if (this.changeTimer <= 0) {
@@ -27,7 +27,8 @@ export class RemotePlayer extends Player {
             this.changeTimer = 2 + Math.random() * 2
         }
 
-        this.move(this.direction, deltaTime)
-        this.updatePhysics(deltaTime)
+        this.move(this.direction, deltaTime, platforms)
+        this.updatePhysics(deltaTime, platforms, this.direction)
+        this.updateAnimation(this.direction, deltaTime)
     }
 }

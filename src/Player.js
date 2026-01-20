@@ -26,15 +26,6 @@ export class Player {
             // Animations
             this.mixer = new THREE.AnimationMixer(this.visual)
             this.animations = gltf.animations
-            for (let i = 0; i < this.animations.length; i++)
-            {
-                console.log('anim ' + i + ' = ' +  this.animations[i].name);
-            }
-            // Exemple : jouer la première animation
-            if (this.animations.length > 0) {
-                this.currentAction = this.mixer.clipAction(this.animations[0])
-                this.currentAction.play()
-            }
             this.visual.traverse((child) => 
             {
                 if (child.isMesh) {
@@ -42,7 +33,7 @@ export class Player {
                     this.material = child.material
                 }
             })
-            this.material.color.set(playerColor) // rouge
+            //this.material.color.set(playerColor) 
         })
 
 
@@ -128,7 +119,7 @@ export class Player {
         this.isGrounded = false
     }
 
-    playAnimation(name) 
+    playAnimation(name, duration = 0.2) 
     {
         if (!this.animations) return
 
@@ -137,34 +128,34 @@ export class Player {
 
         if (this.currentAction && this.currentAction._clip === clip) return
 
-        if (this.currentAction) this.currentAction.stop();
+        const newAction = this.mixer.clipAction(clip)
+        newAction.loop = THREE.LoopRepeat
+        newAction.reset()
+        newAction.play()
 
-        this.currentAction = this.mixer.clipAction(clip)
-        this.currentAction.loop = THREE.LoopRepeat // pour Run/Idle continu
-        this.currentAction.play()
+        if (this.currentAction) {
+            this.currentAction.crossFadeTo(newAction, duration, false)
+        }
+
+        this.currentAction = newAction
     }
 
     updateAnimation(direction, deltaTime) 
     {
         if (!this.mixer) return
 
-        // Mettre à jour le mixer
-        this.mixer.update(deltaTime) // ou deltaTime si tu le passes
+        this.mixer.update(deltaTime)
 
-        // Choisir l’animation
         if (direction.length() > 0 && this.isGrounded) 
         {
-            console.log('Running !');
             this.playAnimation('Run')
         } 
         else if (!this.isGrounded) 
         {
-            console.log('Jumping !');
             this.playAnimation('Jump')
         } 
         else 
         {
-            console.log('Idle');
             this.playAnimation('Idle')
         }
     }
@@ -203,7 +194,6 @@ export class Player {
                     const playerBottomBefore = previousY - this.halfHeight
                     const platformTop = platformBox.max.y
 
-                    // Atterrissage valide seulement si on arrive par le dessus
                     if (playerBottomBefore >= platformTop - this.tolerance)
                     {
                         this.velocityY = 0
@@ -215,13 +205,19 @@ export class Player {
             }
         }
 
-        // if (this.isGrounded && this.currentPlatform && !this.currentPlatform.isStatic) 
-        // {
-        //     console.log(this.currentPlatform.mesh.position.z);
-        //     const deltaPlatform = this.currentPlatform.mesh.position.clone().sub(this.currentPlatform.previousPosition)
-        //     console.log('salut ' + deltaPlatform.y);
-        //     this.mesh.position.add(deltaPlatform)  // ajouter le mouvement de la plateforme
-        // }
+        if (this.isGrounded && this.currentPlatform && !this.currentPlatform.isStatic) 
+        {
+            const deltaPlatform = this.currentPlatform.mesh.position.clone().sub(this.currentPlatform.previousPosition)
+            this.mesh.position.add(deltaPlatform) 
+        }
+        for (let i = 0; i < platforms.length; i++)
+        {
+            if (platforms[i] != this.currentPlatform && platforms[i].getBox().intersectsBox(this.getBox()))
+            {
+                const deltaPlatform = platforms[i].mesh.position.clone().sub(platforms[i].previousPosition)
+                this.mesh.position.add(deltaPlatform) 
+            }
+        }
     }
 
     getBox() {

@@ -1,10 +1,12 @@
 import * as THREE from 'three'
 import GUI from 'lil-gui'
 import { LocalPlayer } from './LocalPlayer.js'
+import { RemotePlayer } from './AiPlayer.js'
 import { Coin } from './coin.js'
 import { Platform } from './Platform.js'
 import {randomColor} from './utils.js'
 import { Vector2 } from 'three'
+import { rand } from 'three/tsl'
 
 
 const gui = new GUI({
@@ -89,7 +91,7 @@ const coins = new Array();
 function addPlatforms(scene)
 {
     let Platforms = new Array();
-    Platforms.push(new Platform(scene, new THREE.Vector3(0, 0, 0), 5, 1, 5))
+    Platforms.push(new Platform(scene, new THREE.Vector3(0, 0, 0), 40, 1, 40))
     let posY = 0;
     for (let i = 0; i < 15; i++)
     {
@@ -100,12 +102,16 @@ function addPlatforms(scene)
         coins.push(new Coin(posX, posY + 1.3, 0));
         scene.add(coins[i].mesh);
     }
-    Platforms[1].isStatic = false;
+    for (let i = 0; i < Platforms.length; i++)
+    {
+        Platforms[i].isStatic = false;
+        Platforms[i].moveX = Math.random() * 3;
+    }
     return (Platforms)
 }
 
 // Objects
-const player = new LocalPlayer(scene, canvas, 0xffffff);
+const player = new LocalPlayer(scene, canvas, randomColor());
 scene.add(player.mesh);
 const grid = new THREE.GridHelper(50, 50);
 scene.add(grid);
@@ -136,7 +142,7 @@ const keys =
     d : false,
     space : false
 }
-const light = new THREE.HemisphereLight(0xaa1212, 50);
+const light = new THREE.HemisphereLight(0xffffff, 100);
 scene.add(light);
 // Camera
 
@@ -190,8 +196,17 @@ gui.add(mouse, 'sensitivity', 0.1, 8, 0.1).name('mousePower');
 const clock = new THREE.Clock()
 
 let movingPlatforms = new Array();
-movingPlatforms.push(platforms[1])
+for (let i = 0; i < platforms.length; i++)
+{
+    if (platforms[i].isStatic == false)
+        movingPlatforms.push(platforms[i]);
+}
 
+let bots = new Array();
+for (let i = 0; i < 40; i++)
+    bots.push(new RemotePlayer(scene, new THREE.Vector3(0, 0, 0), randomColor()));
+for (let i = 0; i < 40; i++)
+    scene.add(bots[i].mesh)
 const tick = () =>
 {
     const deltaTime = clock.getDelta()
@@ -202,7 +217,8 @@ const tick = () =>
         movingPlatforms[i].update(elapsedTime);
     }
     player.update(deltaTime, keys, platforms);
-    //platforms[1].update(elapsedTime);
+    for (let i = 0; i < bots.length; i++)
+        bots[i].update(deltaTime, platforms)
     for (let i = 0; i < coins.length; i++)
     {
         coins[i].update(deltaTime);
@@ -216,7 +232,6 @@ const tick = () =>
     }
     // Render
     renderer.render(scene, player.camera)
-    // Call tick again on the next frame
     window.requestAnimationFrame(tick)
 }
 

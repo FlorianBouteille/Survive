@@ -16,19 +16,18 @@ export class Platform
         this.isStatic = true;
         this.moveX = 0;
         this.moveY = 0;
-        this.moveZ = 1;
-        this.previousPosition = position;
+        this.moveZ = 0;
+        this.previousPosition = this.mesh.position;
         this.isActive = true;
     }
 
     update(elapsedTime)
     {
+        this.previousPosition = this.mesh.position.clone();
         this.mesh.position.z += Math.sin(elapsedTime) / 20 * this.moveZ;
         this.mesh.position.y += Math.sin(elapsedTime) / 20 * this.moveX;
         this.mesh.position.x += Math.sin(elapsedTime) / 20 * this.moveY;
         this.box.setFromObject(this.mesh);
-        //this.previousPosition = this.mesh.position;
-        //console.log('updation previous pos to : ' + previousPosition.z);
     }
 
     getBox()
