@@ -92,7 +92,6 @@ export class Player {
 
     updatePhysics(deltaTime, platforms, direction) 
     {
-        console.log(this.isGrounded);
         if (this.mesh.position.y < -5)
         {
             this.respawn();

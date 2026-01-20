@@ -46,6 +46,7 @@ export class LocalPlayer extends Player {
         const right = new THREE.Vector3()
         right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize()
 
+        console.log('forward = ' + forward + ' right = ' + right);
         return { forward, right }
     }
 

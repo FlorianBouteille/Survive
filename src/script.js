@@ -99,9 +99,11 @@ function addPlatforms(scene)
         let posX = 2 + i * 7 + Math.random() * 2;
         posY += Math.random();
         let size = Math.random() * 3 + 2;
-        Platforms.push(new Platform(scene, new THREE.Vector3(posX, posY, Math.random() * 3), size, 1, size));
-        coins.push(new Coin(posX, posY + 0.3, 0));
+        Platforms.push(new Platform(scene, new THREE.Vector3(posX, posY, 0), size, 1, size));
+        coins.push(new Coin(posX, posY + 1.3, 0));
+        scene.add(coins[i].mesh);
     }
+    Platforms[1].isStatic = false;
     return (Platforms)
 }
 
@@ -189,11 +191,20 @@ gui.add(mouse, 'sensitivity', 0.1, 8, 0.1).name('mousePower');
 // Animate
 const clock = new THREE.Clock()
 
+let movingPlatforms = new Array();
+movingPlatforms.push(platforms[1])
+
 const tick = () =>
 {
     const deltaTime = clock.getDelta()
+    const elapsedTime = clock.getElapsedTime();
 
     player.update(deltaTime, keys, platforms);
+    //platforms[1].update(elapsedTime);
+    for (let i = 0; i < movingPlatforms.length; i++)
+    {
+        movingPlatforms[i].update(elapsedTime);
+    }
     for (let i = 0; i < coins.length; i++)
     {
         coins[i].update(deltaTime);
