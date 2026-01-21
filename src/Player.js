@@ -11,6 +11,7 @@ export class Player {
         this.mesh.position.copy(position)
         this.mesh.position.y += 1;
         this.currentPlatform;
+        this.checkPoint = new THREE.Vector3(0, 2, 0);
 
         this.box = new THREE.Box3()
 
@@ -24,7 +25,20 @@ export class Player {
 
             // Animations
             this.mixer = new THREE.AnimationMixer(this.visual)
+            this.actions = {}
             this.animations = gltf.animations
+            this.animations.forEach(clip => {
+                const action = this.mixer.clipAction(clip)
+                if (clip.name === 'Idle' )
+                {
+                    action.setEffectiveTimeScale(0.5)  // ici tu modifies la vitesse
+                }
+                else if (clip.name === 'Jump')
+                {
+                    action.setEffectiveTimeScale(0.4)  // ici tu modifies la vitesse
+                }
+                this.actions[clip.name] = action
+            })
             this.visual.traverse((child) => 
             {
                 if (child.isMesh) {
@@ -40,8 +54,8 @@ export class Player {
         // Mouvement / physique
         this.speed = 5
         this.velocityY = 0
-        this.gravity = 10
-        this.jumpForce = 7
+        this.gravity = 12
+        this.jumpForce = 6
         this.isGrounded = true
         this.halfHeight = 1;
         this.halfDepth = 0.5;
@@ -53,9 +67,9 @@ export class Player {
 
     respawn()
     {
-        this.mesh.position.x = 0;
-        this.mesh.position.y = 2;
-        this.mesh.position.z = 0;
+        this.mesh.position.x = this.checkPoint.x;
+        this.mesh.position.y = this.checkPoint.y + 1;
+        this.mesh.position.z = this.checkPoint.z;
     }
 
     move(direction, deltaTime, platforms) 
@@ -112,9 +126,13 @@ export class Player {
         this.box.setFromObject(this.mesh)
     }
 
-    jump() {
+    jump() 
+    {
         if (!this.isGrounded) return
-        this.velocityY = this.jumpForce
+        let platformVelocityY = 0
+        if (this.currentPlatform && !this.currentPlatform.isStatic) 
+            platformVelocityY = (this.currentPlatform.mesh.position.y - this.currentPlatform.previousPosition.y) * 50;
+        this.velocityY = this.jumpForce + Math.max(0, platformVelocityY)
         this.isGrounded = false
     }
 
@@ -127,7 +145,7 @@ export class Player {
 
         if (this.currentAction && this.currentAction._clip === clip) return
 
-        const newAction = this.mixer.clipAction(clip)
+        const newAction = this.actions[name];
         newAction.loop = THREE.LoopRepeat
         newAction.reset()
         newAction.play()
@@ -174,11 +192,12 @@ export class Player {
             this.velocityY -= this.gravity * deltaTime
             this.mesh.position.y += this.velocityY * deltaTime
         }
+
         this.isGrounded = false
 
         this.box.setFromObject(this.mesh)
 
-        if (this.velocityY <= 0) 
+        if (!this.isGrounded) 
         {
             for (let i = 0; i < platforms.length; i++)
             {
@@ -191,9 +210,10 @@ export class Player {
                 {
                     this.currentPlatform = platform;
                     const playerBottomBefore = previousY - this.halfHeight
+                    const playerBottomAfter  = this.mesh.position.y - this.halfHeight;
                     const platformTop = platformBox.max.y
 
-                    if (playerBottomBefore >= platformTop - this.tolerance)
+                    if (playerBottomBefore >= platformTop - this.tolerance && playerBottomAfter <= platformTop + this.tolerance)
                     {
                         this.velocityY = 0
                         this.mesh.position.y = platformTop + this.halfHeight
