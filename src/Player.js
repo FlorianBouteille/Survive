@@ -177,6 +177,25 @@ export class Player {
         }
     }
 
+    intersectsBoxXZ(otherBox)
+    {
+        if (this.box.max.x <= otherBox.min.x) return false
+        if (this.box.min.x >= otherBox.max.x) return false
+        if (this.box.max.z <= otherBox.min.z) return false
+        if (this.box.min.z >= otherBox.max.z) return false
+
+        const toleranceY = 2;
+        const playerMinY = this.box.min.y
+        const playerMaxY = this.box.max.y
+        const otherMinY  = otherBox.min.y
+        const otherMaxY  = otherBox.max.y
+
+        if (playerMaxY < otherMinY - toleranceY) return false
+        if (playerMinY > otherMaxY + toleranceY) return false
+
+        return true
+    }
+
     updatePhysics(deltaTime, platforms, direction) 
     {
         if (this.mesh.position.y < -5)
@@ -229,12 +248,17 @@ export class Player {
             const deltaPlatform = this.currentPlatform.mesh.position.clone().sub(this.currentPlatform.previousPosition)
             this.mesh.position.add(deltaPlatform) 
         }
+
+
         for (let i = 0; i < platforms.length; i++)
         {
-            if (platforms[i] != this.currentPlatform && platforms[i].getBox().intersectsBox(this.getBox()))
+            if (platforms[i] != this.currentPlatform && this.intersectsBoxXZ(platforms[i].getBox()))
             {
                 const deltaPlatform = platforms[i].mesh.position.clone().sub(platforms[i].previousPosition)
-                this.mesh.position.add(deltaPlatform) 
+                this.mesh.position.add(deltaPlatform)
+                console.log(platforms[i].mesh.position);
+                console.log(deltaPlatform);
+                this.box.setFromObject(this.mesh);
             }
         }
     }

@@ -4,10 +4,13 @@ import { LocalPlayer } from './LocalPlayer.js'
 import { RemotePlayer } from './AiPlayer.js'
 import { Coin } from './coin.js'
 import { Platform } from './Platform.js'
+import { PeriodicPlatform } from './PeriodicPlatform.js'
+import { LinearPlatform } from './LinearPlatform.js'
 import { checkPoint } from './CheckPoint.js'
 import {randomColor} from './utils.js'
 import { Vector2 } from 'three'
 import { rand } from 'three/tsl'
+import { Vector3 } from 'three/webgpu'
 
 
 const gui = new GUI({
@@ -103,7 +106,7 @@ function stair_left(Platforms)
 
 function middle_way(Platforms)
 {
-    let leftElevator = Platform.createMoving(
+    let leftElevator = new PeriodicPlatform(
         scene, 
         new THREE.Vector3(8, 4, 0), 
         3, 0.5, 3, 
@@ -123,7 +126,7 @@ function middle_way(Platforms)
     rightElevator.phase = new THREE.Vector3(0, 0.5, 0);
     Platforms.push(rightElevator);
     movingPlatforms.push(rightElevator);
-    let leftSlider = Platform.createMoving(
+    let leftSlider = new PeriodicPlatform(
         scene,
         new THREE.Vector3(20, 7, 0),
         3, 0.5, 3, 
@@ -144,7 +147,18 @@ function middle_way(Platforms)
     Platforms.push(rightSlider);
     movingPlatforms.push(rightSlider);
 }
-
+function dodgeBlocks(Platforms)
+{
+    let linear1 = new LinearPlatform(
+        scene, 
+        new THREE.Vector3(100, 8, 0),
+        new THREE.Vector3(45, 8, 0),
+        1, 2, 1,
+        5
+    )
+    Platforms.push(linear1);
+    movingPlatforms.push(linear1);
+}
 function addPlatforms(scene)
 {
     let Platforms = new Array();
@@ -153,6 +167,12 @@ function addPlatforms(scene)
     stair_left(Platforms);
     middle_way(Platforms);
     Platforms.push(new Platform(scene, new THREE.Vector3(37, 6.5, 0), 10, 1, 10));
+    Platforms.push(new Platform(scene, new THREE.Vector3(65, 6.5, 0), 40, 1, 5));
+    dodgeBlocks(Platforms);
+    // let linear1 = new LinearPlatform(
+    //     scene,
+    //     new THREE.Vector3(37, 7.5)
+    // )
     return (Platforms)
 }
 
@@ -247,6 +267,7 @@ gui.add(mouse, 'sensitivity', 0.1, 8, 0.1).name('mousePower');
 // Animate
 const clock = new THREE.Clock()
 
+player.checkPoint = checkPoints[0].mesh.position.clone();
 
 const tick = () =>
 {
