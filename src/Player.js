@@ -5,15 +5,20 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 export class Player {
     constructor(scene, position = new THREE.Vector3(), playerColor) {
         const loader = new GLTFLoader()
-        const geometry = new THREE.BoxGeometry(1, 2, 1)
-        const material = new THREE.MeshBasicMaterial({ color: randomColor() , visible : false})
+        const geometry = new THREE.BoxGeometry(0.6, 2, 0.6)
+        const material = new THREE.MeshBasicMaterial({ color: randomColor() , visible : true})
         this.mesh = new THREE.Mesh(geometry, material)
         this.mesh.position.copy(position)
         this.mesh.position.y += 1;
         this.currentPlatform;
         this.checkPoint = new THREE.Vector3(0, 2, 0);
 
-        this.box = new THREE.Box3()
+        this.box = new THREE.Box3(
+            new THREE.Vector3(-0.3, 0, -0.3),
+            new THREE.Vector3(0.3, 2, 0.3)
+        )
+        this.boxHelper = new THREE.Box3Helper(this.box, 0xff0000);
+        scene.add(this.boxHelper);
 
         loader.load('/character.glb', (gltf) => 
         {
@@ -46,7 +51,6 @@ export class Player {
                     this.material = child.material
                 }
             })
-            //this.material.color.set(playerColor) 
         })
 
 
@@ -58,8 +62,8 @@ export class Player {
         this.jumpForce = 6
         this.isGrounded = true
         this.halfHeight = 1;
-        this.halfDepth = 0.5;
-        this.halfWidth = 0.5;
+        this.halfDepth = 0.3;
+        this.halfWidth = 0.3;
         this.tolerance = 0.05
 
         this.score = 0
@@ -123,12 +127,16 @@ export class Player {
         }
 
         // --- Mise à jour finale de la box ---
-        this.box.setFromObject(this.mesh)
+        this.box.min.add(this.mesh.position)
+        this.box.max.add(this.mesh.position)
     }
 
     jump() 
     {
-        if (!this.isGrounded) return
+        if (!this.isGrounded) 
+            return ;
+        if (!this.currentPlatform.enableJump)
+            return ;
         let platformVelocityY = 0
         if (this.currentPlatform && !this.currentPlatform.isStatic) 
             platformVelocityY = (this.currentPlatform.mesh.position.y - this.currentPlatform.previousPosition.y) * 50;
@@ -184,7 +192,9 @@ export class Player {
         if (this.box.max.z <= otherBox.min.z) return false
         if (this.box.min.z >= otherBox.max.z) return false
 
-        const toleranceY = 2;
+        let toleranceY = 2;
+        if (!this.isGrounded)
+            toleranceY = 0.1
         const playerMinY = this.box.min.y
         const playerMaxY = this.box.max.y
         const otherMinY  = otherBox.min.y
@@ -254,10 +264,14 @@ export class Player {
         {
             if (platforms[i] != this.currentPlatform && this.intersectsBoxXZ(platforms[i].getBox()))
             {
+                console.log('Collision !');
                 const deltaPlatform = platforms[i].mesh.position.clone().sub(platforms[i].previousPosition)
                 this.mesh.position.add(deltaPlatform)
-                console.log(platforms[i].mesh.position);
-                console.log(deltaPlatform);
+                if (!platforms[i].isStatic)
+                {
+                    console.log(i + platforms[i].mesh.position);
+                    console.log(deltaPlatform);
+                }
                 this.box.setFromObject(this.mesh);
             }
         }

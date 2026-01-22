@@ -147,17 +147,33 @@ function middle_way(Platforms)
     Platforms.push(rightSlider);
     movingPlatforms.push(rightSlider);
 }
+
+function dodgeBlockLine(Platforms, posZ)
+{
+    for (let i = 0; i < 4; i++)
+    {
+        let delay = Math.round(Math.random() * i * 4);
+        let pauseTime = 0;
+        let speed = Math.round(Math.random() * 3) + 6;
+        let newPlat = new LinearPlatform(
+            scene, 
+            new THREE.Vector3(100, 8, posZ),
+            new THREE.Vector3(45, 8, posZ),
+            1, 3, 1,
+            speed,
+            delay,
+            pauseTime
+        )
+        Platforms.push(newPlat);
+        movingPlatforms.push(newPlat);
+    }
+}
 function dodgeBlocks(Platforms)
 {
-    let linear1 = new LinearPlatform(
-        scene, 
-        new THREE.Vector3(100, 8, 0),
-        new THREE.Vector3(45, 8, 0),
-        1, 2, 1,
-        5
-    )
-    Platforms.push(linear1);
-    movingPlatforms.push(linear1);
+    dodgeBlockLine(Platforms, -1.5);
+    dodgeBlockLine(Platforms, 0);
+    dodgeBlockLine(Platforms, 1.5);
+
 }
 function addPlatforms(scene)
 {
@@ -167,12 +183,10 @@ function addPlatforms(scene)
     stair_left(Platforms);
     middle_way(Platforms);
     Platforms.push(new Platform(scene, new THREE.Vector3(37, 6.5, 0), 10, 1, 10));
-    Platforms.push(new Platform(scene, new THREE.Vector3(65, 6.5, 0), 40, 1, 5));
+    let longPlatOne = new Platform(scene, new THREE.Vector3(78, 6.5, 0), 70, 1, 5);
+    longPlatOne.enableJump = false;
+    Platforms.push(longPlatOne);
     dodgeBlocks(Platforms);
-    // let linear1 = new LinearPlatform(
-    //     scene,
-    //     new THREE.Vector3(37, 7.5)
-    // )
     return (Platforms)
 }
 
@@ -251,10 +265,10 @@ for (let i = 0; i < platforms.length; i++)
 {
     const platformFolder = platformsGui.addFolder('Plateforme $(i)')
     {
-        platformFolder.add(platforms[i].mesh.position, 'x', -30, 30, 1).name('posX');
-        platformFolder.add(platforms[i].mesh.position, 'z', -30, 30, 1).name('posZ');
-        platformFolder.add(platforms[i].mesh.scale, 'x', -30, 30, 1).name('sizeX');
-        platformFolder.add(platforms[i].mesh.scale, 'z', -30, 30, 1).name('sizeZ');
+        platformFolder.add(platforms[i].mesh.position, 'x', -200, 200, 1).name('posX');
+        platformFolder.add(platforms[i].mesh.position, 'z', -200, 200, 1).name('posZ');
+        platformFolder.add(platforms[i].mesh.scale, 'x', -200, 200, 1).name('sizeX');
+        platformFolder.add(platforms[i].mesh.scale, 'z', -200, 200, 1).name('sizeZ');
     }
 }
 

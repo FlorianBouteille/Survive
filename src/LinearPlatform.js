@@ -21,6 +21,7 @@ export class LinearPlatform extends Platform {
 
     update(elapsedTime) 
     {
+        this.previousPosition = this.mesh.position.clone()
         this.totalElapsedTime = elapsedTime
         
         let timeInCycle = (this.totalElapsedTime - this.delay) % this.cycleTime
@@ -47,7 +48,6 @@ export class LinearPlatform extends Platform {
             this.box.makeEmpty();
         else
             this.box.setFromObject(this.mesh)
-        this.previousPosition = this.mesh.position.clone()
     }
 
     copy() {

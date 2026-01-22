@@ -16,6 +16,7 @@ export class Platform {
         this.previousPosition = this.mesh.position.clone()
         this.isActive = true
         this.isStatic = true
+        this.enableJump = true
     }
 
     copy() 
